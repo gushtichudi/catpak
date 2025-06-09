@@ -5,12 +5,15 @@
 #include <string.h>
 #include <unistd.h>
 
+#define CATPAK_MAX_RAND_BUFLEN 64
+
+#ifndef CATPAK_LOCK
+#define CATPAK_LOCK
 typedef struct Lock {
   char *path;
   void *key;
 } Lock;
 
-#define CATPAK_MAX_RAND_BUFLEN 16
-
 Lock *lock_db(char *db_path);
 FILE *get_fd_to_db(Lock *lock);
+#endif // CATPAK_LOCK

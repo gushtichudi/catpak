@@ -1,7 +1,5 @@
 #include "../include/catpak.h"
 
-
-
 Lock *lock_db(char *db_path) {
   Lock *l = malloc(sizeof(Lock*) * 2);
   if (l == NULL) {
@@ -10,7 +8,7 @@ Lock *lock_db(char *db_path) {
   }
 
   if (db_path == NULL) {
-    fprintf(stderr, "* warning: `db_path` is not specified. using path `%s`\n", DEFAULT_DB_PATH);
+    // fprintf(stderr, "* warning: `db_path` is not specified. using path `%s`\n", DEFAULT_DB_PATH);
     db_path = strdup(DEFAULT_DB_PATH);
   }
 
@@ -20,6 +18,7 @@ Lock *lock_db(char *db_path) {
   FILE *db_file_stream = fopen(db_path, "w");
   if (db_file_stream == NULL) {
     fprintf(stderr, "catpak: %s: %s\n", db_path, strerror(errno));
+    if (errno == EACCES) fprintf(stderr, "* hint: are you root? probably not\n");
     exit(-1);
   }
 
@@ -56,7 +55,8 @@ Lock *lock_db(char *db_path) {
     exit(-1);
   }
 
-  l->key = unlock_code;
+  // l->key = unlock_code;
+  memcpy(&l->key, &unlock_code, sizeof(unlock_code));
 
   return l;
 }

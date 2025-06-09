@@ -9,9 +9,7 @@ struct Arguments {
   char *packagesToInstall;
 };
 
-
 int main(int argc, char **argv) {
-  // if 1 returned, try again
   if (catpak_init(DEFAULT_DB_PATH) != 0) exit(-1);
 
   if (argc < 2) {
@@ -36,17 +34,25 @@ int main(int argc, char **argv) {
     }
   }
 
-  printf("Packages to install:- %s\n", a->packagesToInstall);
-  
-  printf("* about to read db... expect error because i haven't done making ts yet\n");
   Lock *cd = lock_db(NULL);
   if (cd == NULL) {
     fprintf(stderr, "!!! struct *cd is empty!\n");
     exit(-1);
   }
 
-  FILE *lock = get_fd_to_db(cd);
-  printf("* file descriptor opened ig???\n");
+  Transaction *transaction = malloc(sizeof(Transaction*) + (sizeof(char*) + sizeof(FILE*)));
+  if (transaction == NULL) {
+    fprintf(stderr, "catpak: memory error: %s\n", strerror(errno));
+    free(a);
+    free(cd);
+    exit(-1);
+  }
+
+  transaction->package = strdup(a->packagesToInstall);
+  transaction->lock = cd;
+  transaction->db_fd = get_fd_to_db(transaction->lock);
+
+  get_catpak_version(transaction);
 
   free(a);
   free(cd);
