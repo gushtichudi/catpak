@@ -1,0 +1,56 @@
+#include "../include/catpak.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <bits/getopt_core.h>
+
+struct Arguments {
+  char *packagesToInstall;
+};
+
+
+int main(int argc, char **argv) {
+  // if 1 returned, try again
+  if (catpak_init(DEFAULT_DB_PATH) != 0) exit(-1);
+
+  if (argc < 2) {
+    fprintf(stderr, "* to install package: catpak -i <package>\n");
+    fprintf(stderr, "* you need more commands\n");
+
+    return -1;
+  }
+
+  struct Arguments *a = malloc(sizeof(struct Arguments*));
+  if (a == NULL) {
+    perror("struct Arguments *a\n");
+    return -1;
+  }
+
+  int c;
+  while ((c = getopt(argc, argv, "i:")) != -1) {
+    switch (c) {
+      case 'i':
+        a->packagesToInstall = strdup(optarg);
+        break;
+    }
+  }
+
+  printf("Packages to install:- %s\n", a->packagesToInstall);
+  
+  printf("* about to read db... expect error because i haven't done making ts yet\n");
+  Lock *cd = lock_db(NULL);
+  if (cd == NULL) {
+    fprintf(stderr, "!!! struct *cd is empty!\n");
+    exit(-1);
+  }
+
+  FILE *lock = get_fd_to_db(cd);
+  printf("* file descriptor opened ig???\n");
+
+  free(a);
+  free(cd);
+
+  fprintf(stderr, "\n* program finished without any errors\n");
+  return 0;
+}
