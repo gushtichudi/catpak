@@ -3,3 +3,6 @@ __pycache__
 vgcore.*
 
 *.so
+*.o
+
+catpak

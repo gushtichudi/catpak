@@ -1,7 +1,6 @@
 #include "../include/catpak.h"
 
-#include <fcntl.h>
-#include <unistd.h>
+
 
 Lock *lock_db(char *db_path) {
   Lock *l = malloc(sizeof(Lock*) * 2);
@@ -36,7 +35,7 @@ Lock *lock_db(char *db_path) {
     fprintf(stderr, "catpak: error: %s\n", strerror(errno));
 
     if (errno == EBADF) {
-      fprintf(stderr, "hint: was %s ever properly created?\n\n", DEFAULT_DB_PATH);
+      fprintf(stderr, "\n* sysadmin hint: was %s ever properly created?\n\n", DEFAULT_DB_PATH);
     }
 
     fclose(db_file_stream);
@@ -44,9 +43,15 @@ Lock *lock_db(char *db_path) {
   }
 
   // everything succeded, time to generate code
-  void *unlock_code;
+  void *unlock_code = malloc(sizeof(void*) * CATPAK_MAX_RAND_BUFLEN);
+  if (unlock_code == NULL) {
+    fprintf(stderr, "catpak: memory error: %s\n", strerror(errno));
+    fclose(db_file_stream);
+    exit(-1);
+  }
+
   if (getentropy(unlock_code, CATPAK_MAX_RAND_BUFLEN) == -1) {
-    fprintf(stderr, "catpak: error: %s\n", strerror(errno));;
+    fprintf(stderr, "catpak: cannot authenthicate: %s\n", strerror(errno));
     fclose(db_file_stream);
     exit(-1);
   }
